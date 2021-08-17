@@ -35,7 +35,7 @@ R = 0.0
 # set acceleration commands
 AX = 0
 AY = 0.0
-AZ = 9.81#-15.6780
+AZ = 10#-15.6780
 
 # integrator
 EULER = 0
@@ -45,4 +45,4 @@ RK45 = 1
 DELTA_T = 0.01
 
 # other
-NUM_INNER_LOOP = 10
+NUM_INNER_LOOP = 1
