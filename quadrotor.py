@@ -25,12 +25,12 @@ class Quadrotor:
         self.az = AZ
 
         # compute commanded attitude using commanded accelerations
-        self.phi_c = atan(self.ay * cos(self.theta)/(self.g + self.az + 1e-16))     # <- check for az sign
-        self.theta_c = atan(self.ax / (-self.az - self.g + 1e-16))                  # <- check for az sign
+        self.phi_c = atan(self.ay * cos(self.theta)/(self.g - self.az + 1e-16))     # <- check for az sign
+        self.theta_c = atan(self.ax / (self.az - self.g + 1e-16))                  # <- check for az sign
         self.psi_c = 0
 
         # compute required force
-        self.F = (self.g + self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
+        self.F = (self.g - self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
 
         # compute required torque
         self.tau_phi = self.GAINS.KP_phi*self.norm_ang(self.phi_c - self.phi) + self.GAINS.KD_phi*(0-self.p)
@@ -46,12 +46,12 @@ class Quadrotor:
 
     def compute_force_and_torque(self):
         # compute commanded attitude using commanded accelerations
-        self.phi_c = atan(self.ay * cos(self.theta)/(self.g + self.az + 1e-16))     # <- check for az sign
-        self.theta_c = atan(self.ax / (-self.az - self.g + 1e-16))                  # <- check for az sign
+        self.phi_c = atan(self.ay * cos(self.theta)/(self.g - self.az + 1e-16))     # <- check for az sign
+        self.theta_c = atan(self.ax / (self.az - self.g + 1e-16))                  # <- check for az sign
         self.psi_c = 0
 
         # compute required force
-        self.F = (self.g + self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
+        self.F = (self.g - self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
         
 
         # compute required torque
@@ -298,12 +298,12 @@ def main():
     quadrotor = Quadrotor()
     t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=EULER)
     quadrotor.set_init_state()
-    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T*5, final_time=30, integrator=EULER)
+    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T*2, final_time=30, integrator=EULER)
     quadrotor.set_init_state()
-    t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*5, final_time=30, integrator=RK45)
+    t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=30, integrator=EULER)
 
     plt.style.use('seaborn-whitegrid')
-    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(12,9), dpi=80,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(8,6), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
     fig_manager = plt.get_current_fig_manager()
     fig_manager.window.wm_geometry("+0+0")
 
@@ -311,23 +311,23 @@ def main():
     add_plot_states(axs, t2, quad_states2)
     add_plot_states(axs, t3, quad_states3)
 
-    axs[0,0].set_title(r'$p_n$')
-    axs[1,0].set_title(r'$p_e$')
-    axs[2,0].set_title(r'$p_h$')
-    axs[0,1].set_title(r'$u$')
-    axs[1,1].set_title(r'$v$')
-    axs[2,1].set_title(r'$w$')
-    axs[0,2].set_title(r'$\phi$')
-    axs[1,2].set_title(r'$\theta$')
-    axs[2,2].set_title(r'$\psi$')
-    axs[0,3].set_title(r'$p$')
-    axs[1,3].set_title(r'$q$')
-    axs[2,3].set_title(r'$r$')
+    axs[0,0].set_title(r'$\mathbf{p_n}$')
+    axs[1,0].set_title(r'$\mathbf{p_e}$')
+    axs[2,0].set_title(r'$\mathbf{p_h}$')
+    axs[0,1].set_title(r'$\mathbf{u}$')
+    axs[1,1].set_title(r'$\mathbf{v}$')
+    axs[2,1].set_title(r'$\mathbf{w}$')
+    axs[0,2].set_title(r'$\mathbf{\phi}$')
+    axs[1,2].set_title(r'$\mathbf{\theta}$')
+    axs[2,2].set_title(r'$\mathbf{\psi}$')
+    axs[0,3].set_title(r'$\mathbf{p}$')
+    axs[1,3].set_title(r'$\mathbf{q}$')
+    axs[2,3].set_title(r'$\mathbf{r}$')
 
     f1.show()
 
 
-    f2, axs = plt.subplots(2, 2, sharex=True, figsize=(6,6), dpi=80,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f2, axs = plt.subplots(2, 2, sharex=True, figsize=(4,4), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
     fig_manager = plt.get_current_fig_manager()
     fig_manager.window.wm_geometry("+961+0")
 
@@ -335,23 +335,18 @@ def main():
     add_plot_forces(axs, t2, forces2)
     add_plot_forces(axs, t3, forces3)
 
-    axs[0,0].set_title(r'$F$')
-    axs[1,0].set_title(r'$\tau_{\phi}$')
-    axs[0,1].set_title(r'$\tau_{\theta}$')
-    axs[1,1].set_title(r'$\tau_{\psi}$')
-
-
-
-
-
+    axs[0,0].set_title(r'$\mathbf{F}$')
+    axs[1,0].set_title(r'$\mathbf{\tau_{\phi}}$')
+    axs[0,1].set_title(r'$\mathbf{\tau_{\theta}}$')
+    axs[1,1].set_title(r'$\mathbf{\tau_{\psi}}$')
 
 
 
     f2.show()
-    plt.draw()
-    plt.waitforbuttonpress(0)
-    plt.close('all')
-    # plt.show()
+    # plt.draw()
+    # plt.waitforbuttonpress(0)
+    # plt.close('all')
+    plt.show()
 
 
 if __name__=='__main__':

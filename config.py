@@ -33,9 +33,9 @@ Q = 0.0
 R = 0.0
 
 # set acceleration commands
-AX = 0
+AX = 0.0
 AY = 0.0
-AZ = 10#-15.6780
+AZ = 0.0#-15.6780
 
 # integrator
 EULER = 0
