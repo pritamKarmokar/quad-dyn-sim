@@ -75,6 +75,8 @@ class Quadrotor:
 
 
     def set_init_state(self):
+        print('\n\n INITIALIZING QUADROTOR STATES')
+        print('------------------------------\n')
         self.pN = PN
         self.pE = PE
         self.pH = PH
@@ -102,11 +104,32 @@ class Quadrotor:
                                self.r])
 
 
+    def print_states(self):
+        """helper function to print states"""
+        print(f'pos=({self.pN:.2f}, ' + 
+              f'{self.pE:.2f}, ' + 
+              f'{self.pH:.2f})  vel=(' +
+              f'{self.U:.2f}, ' +
+              f'{self.V:.2f}, ' +
+              f'{self.W:.2f})  att=(' +
+              f'{self.phi:.2f}, ' +
+              f'{self.theta:.2f}, ' +
+              f'{self.psi:.2f})  att_rate=(' +
+              f'{self.p:.2f}, ' +
+              f'{self.q:.2f}, ' +
+              f'{self.r:.2f})  FaT=(' +
+              f'{self.F:.2f}, ' +
+              f'{self.tau_phi:.2f}, ' +
+              f'{self.tau_theta:.2f}, ' + 
+              f'{self.tau_psi:.2f})'
+            )    
+
     def step(self, delta_t=DELTA_T, integrator=EULER):
         state = self.get_state()
 
         updated_state = self.update_state(state, delta_t, integrator)
-
+        
+        # self.print_states()
         return updated_state
 
 
@@ -156,8 +179,8 @@ class Quadrotor:
         inner_loop_step = delta_t / num_inner_loop
 
         for i in range(num_inner_loop):
-            F_app = self.F * ((i+1)/num_inner_loop)**2
-            state_dot = self.eval_state_dot(state, F_app)
+            # F_app = self.F * ((i+1)/num_inner_loop)**2
+            state_dot = self.eval_state_dot(state, self.F)
 
             state += state_dot*inner_loop_step
 
@@ -230,7 +253,7 @@ class Quadrotor:
         # compute the transform matrix
         transform_mat = np.array([[1, sin(phi)*tan(theta), cos(phi)*tan(theta)],
                                   [0, cos(phi),            -sin(phi)],
-                                  [0, sin(phi)/cos(theta), cos(phi)/cos(theta)]])
+                                  [0, sin(phi)/(cos(theta)+1e-16), cos(phi)/(cos(theta)+1e-16)]])
 
         # compute attitude rate dynamics
         attitude_dot = transform_mat @ np.array([[p],
@@ -293,24 +316,7 @@ def add_plot_forces(axs, t, forces):
     axs[1,1].plot(t, forces[1:,3],alpha=0.7)
 
 
-
-def main():
-    quadrotor = Quadrotor()
-    t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=EULER)
-    quadrotor.set_init_state()
-    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T*2, final_time=30, integrator=EULER)
-    quadrotor.set_init_state()
-    t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=30, integrator=EULER)
-
-    plt.style.use('seaborn-whitegrid')
-    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(8,6), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
-    fig_manager = plt.get_current_fig_manager()
-    fig_manager.window.wm_geometry("+0+0")
-
-    add_plot_states(axs, t, quad_states)
-    add_plot_states(axs, t2, quad_states2)
-    add_plot_states(axs, t3, quad_states3)
-
+def set_state_plot_titles(axs):
     axs[0,0].set_title(r'$\mathbf{p_n}$')
     axs[1,0].set_title(r'$\mathbf{p_e}$')
     axs[2,0].set_title(r'$\mathbf{p_h}$')
@@ -324,25 +330,51 @@ def main():
     axs[1,3].set_title(r'$\mathbf{q}$')
     axs[2,3].set_title(r'$\mathbf{r}$')
 
-    f1.show()
-
-
-    f2, axs = plt.subplots(2, 2, sharex=True, figsize=(4,4), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
-    fig_manager = plt.get_current_fig_manager()
-    fig_manager.window.wm_geometry("+961+0")
-
-    add_plot_forces(axs, t, forces)
-    add_plot_forces(axs, t2, forces2)
-    add_plot_forces(axs, t3, forces3)
-
+def set_force_plot_titles(axs):
     axs[0,0].set_title(r'$\mathbf{F}$')
     axs[1,0].set_title(r'$\mathbf{\tau_{\phi}}$')
     axs[0,1].set_title(r'$\mathbf{\tau_{\theta}}$')
     axs[1,1].set_title(r'$\mathbf{\tau_{\psi}}$')
 
+def main():
+    quadrotor = Quadrotor()
+    t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=EULER)
 
+    # quadrotor.set_init_state()
+    # t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T*2, final_time=30, integrator=EULER)
+    # quadrotor.set_init_state()
+    # t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=30, integrator=EULER)
+
+    plt.style.use('seaborn-whitegrid')
+
+    # --------------------------------
+    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(8,6), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f1.suptitle(r'$\mathbf{Quadrotor\ states}$')
+    fig_manager = plt.get_current_fig_manager()
+    fig_manager.window.wm_geometry("+0+0")
+
+    set_state_plot_titles(axs)
+
+    add_plot_states(axs, t, quad_states)
+    # add_plot_states(axs, t2, quad_states2)
+    # add_plot_states(axs, t3, quad_states3)    
+
+    f1.show()
+
+    # --------------------------------
+    f2, axs = plt.subplots(2, 2, sharex=True, figsize=(4,4), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f2.suptitle(r'$\mathbf{Force\ and\ Torques}$')
+    fig_manager = plt.get_current_fig_manager()
+    fig_manager.window.wm_geometry("+961+0")
+
+    set_force_plot_titles(axs)
+
+    add_plot_forces(axs, t, forces)
+    # add_plot_forces(axs, t2, forces2)
+    # add_plot_forces(axs, t3, forces3)
 
     f2.show()
+
     # plt.draw()
     # plt.waitforbuttonpress(0)
     # plt.close('all')

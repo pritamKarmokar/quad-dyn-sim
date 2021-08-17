@@ -16,7 +16,7 @@ K_D_Z = 10.0
 
 
 # gravity
-ACC_GRAVITY = -9.81
+ACC_GRAVITY = 9.81
 
 # initial state
 PN = 0.0
@@ -35,9 +35,9 @@ R = 0.0
 # set acceleration commands
 AX = 0.0
 AY = 0.0
-AZ = 0.0#-15.6780
+AZ = 1.0#-15.6780
 
-# integrator
+# integrators
 EULER = 0
 RK45 = 1
 
@@ -45,4 +45,4 @@ RK45 = 1
 DELTA_T = 0.01
 
 # other
-NUM_INNER_LOOP = 1
+NUM_INNER_LOOP = 10
