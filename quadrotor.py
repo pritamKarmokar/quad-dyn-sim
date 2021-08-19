@@ -3,6 +3,7 @@ from collections import namedtuple
 from math import sin, cos, tan, atan, atan2, pi, tau
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 from config import *
 
 class Quadrotor:
@@ -309,12 +310,16 @@ def add_plot_states(axs, t, quad_states):
     axs[1,3].plot(t,quad_states[1:,10], alpha=0.7)
     axs[2,3].plot(t,quad_states[1:,11], alpha=0.7)
 
-def add_plot_forces(axs, t, forces):
-    axs[0,0].plot(t, forces[1:,0],alpha=0.7)
-    axs[1,0].plot(t, forces[1:,1],alpha=0.7)
-    axs[0,1].plot(t, forces[1:,2],alpha=0.7)
-    axs[1,1].plot(t, forces[1:,3],alpha=0.7)
+def add_plot_wrench(axs, t, forces):
+    axs[0].plot(t, forces[1:,0],alpha=0.7)
+    axs[1].plot(t, forces[1:,1],alpha=0.7)
+    axs[2].plot(t, forces[1:,2],alpha=0.7)
+    axs[3].plot(t, forces[1:,3],alpha=0.7)
 
+
+def add_plot_traj(axs, states):
+    axs.plot3D(states[1:,0], states[1:,1], states[1:,2], alpha=0.7)
+    axs.scatter3D(states[1:,0], states[1:,1], states[1:,2], c=states[1:,2], cmap='plasma',alpha=0.15)
 
 def set_state_plot_titles(axs):
     axs[0,0].set_title(r'$\mathbf{p_n}$')
@@ -330,25 +335,26 @@ def set_state_plot_titles(axs):
     axs[1,3].set_title(r'$\mathbf{q}$')
     axs[2,3].set_title(r'$\mathbf{r}$')
 
-def set_force_plot_titles(axs):
-    axs[0,0].set_title(r'$\mathbf{F}$')
-    axs[1,0].set_title(r'$\mathbf{\tau_{\phi}}$')
-    axs[0,1].set_title(r'$\mathbf{\tau_{\theta}}$')
-    axs[1,1].set_title(r'$\mathbf{\tau_{\psi}}$')
+def set_wrench_plot_titles(axs):
+    axs[0].set_title(r'$\mathbf{F}$')
+    axs[1].set_title(r'$\mathbf{\tau_{\phi}}$')
+    axs[2].set_title(r'$\mathbf{\tau_{\theta}}$')
+    axs[3].set_title(r'$\mathbf{\tau_{\psi}}$')
 
 def main():
     quadrotor = Quadrotor()
     t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=EULER)
 
-    # quadrotor.set_init_state()
-    # t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T*2, final_time=30, integrator=EULER)
+    quadrotor.set_init_state()
+    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=RK45)
     # quadrotor.set_init_state()
     # t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=30, integrator=EULER)
 
     plt.style.use('seaborn-whitegrid')
 
+    DPI = 100
     # --------------------------------
-    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(8,6), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f1, axs = plt.subplots(3, 4, sharex=True, figsize=(8,6), dpi=DPI,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
     f1.suptitle(r'$\mathbf{Quadrotor\ states}$')
     fig_manager = plt.get_current_fig_manager()
     fig_manager.window.wm_geometry("+0+0")
@@ -356,28 +362,43 @@ def main():
     set_state_plot_titles(axs)
 
     add_plot_states(axs, t, quad_states)
-    # add_plot_states(axs, t2, quad_states2)
+    add_plot_states(axs, t2, quad_states2)
     # add_plot_states(axs, t3, quad_states3)    
 
     f1.show()
 
     # --------------------------------
-    f2, axs = plt.subplots(2, 2, sharex=True, figsize=(4,4), dpi=120,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
-    f2.suptitle(r'$\mathbf{Force\ and\ Torques}$')
+    f2, axs = plt.subplots(1, 4, sharex=True, figsize=(8,2), dpi=DPI,gridspec_kw={'hspace': 0.2, 'wspace':0.4})
+    f2.suptitle(r'$\mathbf{Wrench}$')
     fig_manager = plt.get_current_fig_manager()
-    fig_manager.window.wm_geometry("+961+0")
+    fig_manager.window.wm_geometry("+801+0")
 
-    set_force_plot_titles(axs)
+    set_wrench_plot_titles(axs)
 
-    add_plot_forces(axs, t, forces)
-    # add_plot_forces(axs, t2, forces2)
-    # add_plot_forces(axs, t3, forces3)
+    add_plot_wrench(axs, t, forces)
+    add_plot_wrench(axs, t2, forces2)
+    # add_plot_wrench(axs, t3, forces3)
 
     f2.show()
+
+    #-----------------------------------
+    f3 = plt.figure(figsize=(8,3.35), dpi=DPI)
+    axs = f3.add_subplot(111,projection='3d')
+    f3.suptitle(r'$\mathbf{Quadrotor\ trajectory}$')
+    axs.set(xlabel=r'$x\ (m)$', ylabel=r'$y\ (m)$', zlabel=r'$z\ (m)$')
+    fig_manager = plt.get_current_fig_manager()
+    fig_manager.window.wm_geometry("+801+265")
+
+    add_plot_traj(axs, quad_states)
+    add_plot_traj(axs, quad_states2)
+
+    f3.show()
+
 
     # plt.draw()
     # plt.waitforbuttonpress(0)
     # plt.close('all')
+
     plt.show()
 
 
