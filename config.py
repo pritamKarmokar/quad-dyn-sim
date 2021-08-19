@@ -45,4 +45,4 @@ RK45 = 1
 DELTA_T = 0.01
 
 # other
-NUM_INNER_LOOP = 1
+NUM_INNER_LOOP = 10

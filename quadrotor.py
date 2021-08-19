@@ -180,8 +180,8 @@ class Quadrotor:
         inner_loop_step = delta_t / num_inner_loop
 
         for i in range(num_inner_loop):
-            # F_app = self.F * ((i+1)/num_inner_loop)**2
-            state_dot = self.eval_state_dot(state, self.F)
+            F_app = self.F
+            state_dot = self.eval_state_dot(state, F_app)
 
             state += state_dot*inner_loop_step
 
@@ -194,7 +194,7 @@ class Quadrotor:
         inner_loop_step = delta_t / num_inner_loop
 
         for i in range(num_inner_loop):
-            F_app = self.F * ((i+1)/num_inner_loop)**2
+            F_app = self.F
             k1 = self.eval_state_dot(state, F_app)
             k2 = self.eval_state_dot(state + k1*(inner_loop_step/2), F_app)
             k3 = self.eval_state_dot(state + k2*(inner_loop_step/2), F_app)
@@ -318,8 +318,8 @@ def add_plot_wrench(axs, t, forces):
 
 
 def add_plot_traj(axs, states):
-    axs.plot3D(states[1:,0], states[1:,1], states[1:,2], alpha=0.7)
-    axs.scatter3D(states[1:,0], states[1:,1], states[1:,2], c=states[1:,2], cmap='plasma',alpha=0.15)
+    axs.plot3D(states[1:,0], states[1:,1], states[1:,2], alpha=0.8)
+    axs.scatter3D(states[1:,0], states[1:,1], states[1:,2], c=states[1:,2], cmap='plasma',s=3,alpha=0.1)
 
 def set_state_plot_titles(axs):
     axs[0,0].set_title(r'$\mathbf{p_n}$')
