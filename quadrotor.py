@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from config import *
+from win32api import GetSystemMetrics
 
 class Quadrotor:
     def __init__(self, m=MASS, Ixx=I_XX, Iyy=I_YY, Izz=I_ZZ):
