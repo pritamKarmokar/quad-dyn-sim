@@ -343,12 +343,12 @@ def set_wrench_plot_titles(axs):
 
 def main():
     quadrotor = Quadrotor()
-    t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=EULER)
+    t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=FINAL_TIME, integrator=EULER)
 
     quadrotor.set_init_state()
-    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T, final_time=30, integrator=RK45)
+    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T, final_time=FINAL_TIME, integrator=RK45)
     # quadrotor.set_init_state()
-    # t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=30, integrator=EULER)
+    # t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=FINAL_TIME, integrator=EULER)
 
     plt.style.use('seaborn-whitegrid')
 
