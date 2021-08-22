@@ -42,7 +42,7 @@ EULER = 0
 RK45 = 1
 
 # time
-FINAL_TIME = 3
+FINAL_TIME = 0.5
 DELTA_T = 0.01
 
 # other

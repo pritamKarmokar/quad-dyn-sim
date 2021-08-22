@@ -319,7 +319,7 @@ def add_plot_wrench(axs, t, forces):
 
 def add_plot_traj(axs, states):
     axs.plot3D(states[1:,0], states[1:,1], states[1:,2], alpha=0.8)
-    axs.scatter3D(states[1:,0], states[1:,1], states[1:,2], c=states[1:,2], cmap='plasma',s=3,alpha=0.1)
+    axs.scatter3D(states[1:,0], states[1:,1], states[1:,2], c=states[1:,2], cmap='plasma',s=3,alpha=0.7)
 
 def set_state_plot_titles(axs):
     axs[0,0].set_title(r'$\mathbf{p_n}$')
