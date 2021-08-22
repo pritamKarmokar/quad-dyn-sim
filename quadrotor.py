@@ -296,43 +296,43 @@ class Quadrotor:
         return time, states, forces
 
 
-def add_plot_states(axs, t, quad_states):
-    axs[0,0].fill_between(t,quad_states[1:,0],  0, alpha=0.1)
-    axs[1,0].fill_between(t,quad_states[1:,1],  0, alpha=0.1)
-    axs[2,0].fill_between(t,quad_states[1:,2],  0, alpha=0.1)
-    axs[0,1].fill_between(t,quad_states[1:,3],  0, alpha=0.1)
-    axs[1,1].fill_between(t,quad_states[1:,4],  0, alpha=0.1)
-    axs[2,1].fill_between(t,quad_states[1:,5],  0, alpha=0.1)
-    axs[0,2].fill_between(t,quad_states[1:,6],  0, alpha=0.1)
-    axs[1,2].fill_between(t,quad_states[1:,7],  0, alpha=0.1)
-    axs[2,2].fill_between(t,quad_states[1:,8],  0, alpha=0.1)
-    axs[0,3].fill_between(t,quad_states[1:,9],  0, alpha=0.1)
-    axs[1,3].fill_between(t,quad_states[1:,10], 0, alpha=0.1)
-    axs[2,3].fill_between(t,quad_states[1:,11], 0, alpha=0.1)
-    axs[0,0].plot(t,quad_states[1:,0],  alpha=0.6)
-    axs[1,0].plot(t,quad_states[1:,1],  alpha=0.6)
-    axs[2,0].plot(t,quad_states[1:,2],  alpha=0.6)
-    axs[0,1].plot(t,quad_states[1:,3],  alpha=0.6)
-    axs[1,1].plot(t,quad_states[1:,4],  alpha=0.6)
-    axs[2,1].plot(t,quad_states[1:,5],  alpha=0.6)
-    axs[0,2].plot(t,quad_states[1:,6],  alpha=0.6)
-    axs[1,2].plot(t,quad_states[1:,7],  alpha=0.6)
-    axs[2,2].plot(t,quad_states[1:,8],  alpha=0.6)
-    axs[0,3].plot(t,quad_states[1:,9],  alpha=0.6)
-    axs[1,3].plot(t,quad_states[1:,10], alpha=0.6)
-    axs[2,3].plot(t,quad_states[1:,11], alpha=0.6)
-    axs[0,0].plot(t,quad_states[1:,0],  alpha=0.6)
+def add_plot_states(axs, t, quad_states, color):
+    axs[0,0].fill_between(t,quad_states[1:,0],  0, alpha=0.1,color=color)
+    axs[1,0].fill_between(t,quad_states[1:,1],  0, alpha=0.1,color=color)
+    axs[2,0].fill_between(t,quad_states[1:,2],  0, alpha=0.1,color=color)
+    axs[0,1].fill_between(t,quad_states[1:,3],  0, alpha=0.1,color=color)
+    axs[1,1].fill_between(t,quad_states[1:,4],  0, alpha=0.1,color=color)
+    axs[2,1].fill_between(t,quad_states[1:,5],  0, alpha=0.1,color=color)
+    axs[0,2].fill_between(t,quad_states[1:,6],  0, alpha=0.1,color=color)
+    axs[1,2].fill_between(t,quad_states[1:,7],  0, alpha=0.1,color=color)
+    axs[2,2].fill_between(t,quad_states[1:,8],  0, alpha=0.1,color=color)
+    axs[0,3].fill_between(t,quad_states[1:,9],  0, alpha=0.1,color=color)
+    axs[1,3].fill_between(t,quad_states[1:,10], 0, alpha=0.1,color=color)
+    axs[2,3].fill_between(t,quad_states[1:,11], 0, alpha=0.1,color=color)
+    axs[0,0].plot(t,quad_states[1:,0],  alpha=0.6,color=color)
+    axs[1,0].plot(t,quad_states[1:,1],  alpha=0.6,color=color)
+    axs[2,0].plot(t,quad_states[1:,2],  alpha=0.6,color=color)
+    axs[0,1].plot(t,quad_states[1:,3],  alpha=0.6,color=color)
+    axs[1,1].plot(t,quad_states[1:,4],  alpha=0.6,color=color)
+    axs[2,1].plot(t,quad_states[1:,5],  alpha=0.6,color=color)
+    axs[0,2].plot(t,quad_states[1:,6],  alpha=0.6,color=color)
+    axs[1,2].plot(t,quad_states[1:,7],  alpha=0.6,color=color)
+    axs[2,2].plot(t,quad_states[1:,8],  alpha=0.6,color=color)
+    axs[0,3].plot(t,quad_states[1:,9],  alpha=0.6,color=color)
+    axs[1,3].plot(t,quad_states[1:,10], alpha=0.6,color=color)
+    axs[2,3].plot(t,quad_states[1:,11], alpha=0.6,color=color)
+    axs[0,0].plot(t,quad_states[1:,0],  alpha=0.6,color=color)
     
 
-def add_plot_wrench(axs, t, forces):
-    axs[0].fill_between(t, forces[1:,0],0,alpha=0.1)
-    axs[1].fill_between(t, forces[1:,1],0,alpha=0.1)
-    axs[2].fill_between(t, forces[1:,2],0,alpha=0.1)
-    axs[3].fill_between(t, forces[1:,3],0,alpha=0.1)
-    axs[0].plot(t, forces[1:,0],alpha=0.6)
-    axs[1].plot(t, forces[1:,1],alpha=0.6)
-    axs[2].plot(t, forces[1:,2],alpha=0.6)
-    axs[3].plot(t, forces[1:,3],alpha=0.6)
+def add_plot_wrench(axs, t, forces, color):
+    axs[0].fill_between(t, forces[1:,0],0,alpha=0.1,color=color)
+    axs[1].fill_between(t, forces[1:,1],0,alpha=0.1,color=color)
+    axs[2].fill_between(t, forces[1:,2],0,alpha=0.1,color=color)
+    axs[3].fill_between(t, forces[1:,3],0,alpha=0.1,color=color)
+    axs[0].plot(t, forces[1:,0],alpha=0.6,color=color)
+    axs[1].plot(t, forces[1:,1],alpha=0.6,color=color)
+    axs[2].plot(t, forces[1:,2],alpha=0.6,color=color)
+    axs[3].plot(t, forces[1:,3],alpha=0.6,color=color)
 
 
 def add_plot_traj(axs, states):
@@ -379,8 +379,8 @@ def main():
 
     set_state_plot_titles(axs)
 
-    add_plot_states(axs, t, quad_states)
-    add_plot_states(axs, t2, quad_states2)
+    add_plot_states(axs, t, quad_states, 'blue')
+    add_plot_states(axs, t2, quad_states2, 'orange')
     # add_plot_states(axs, t3, quad_states3)    
 
     f1.show()
@@ -393,8 +393,8 @@ def main():
 
     set_wrench_plot_titles(axs)
 
-    add_plot_wrench(axs, t, forces)
-    add_plot_wrench(axs, t2, forces2)
+    add_plot_wrench(axs, t, forces, 'blue')
+    add_plot_wrench(axs, t2, forces2, 'orange')
     # add_plot_wrench(axs, t3, forces3)
 
     f2.show()
