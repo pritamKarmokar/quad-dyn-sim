@@ -4,16 +4,24 @@ from math import sin, cos, tan, atan, atan2, pi, tau
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-from config import *
+from config import cfg
 from win32api import GetSystemMetrics
 
+EPSILON = 1e-16
+
 class Quadrotor:
-    def __init__(self, m=MASS, Ixx=I_XX, Iyy=I_YY, Izz=I_ZZ):
+    def __init__(
+        self,
+        m: float=cfg.INERTIA.MASS,
+        Ixx: float=cfg.INERTIA.I_XX, 
+        Iyy: float=cfg.INERTIA.I_YY,
+        Izz: float=cfg.INERTIA.I_ZZ
+    ):
         # set inertia parameters
         self.set_inertia_params()
 
         # set acceleration due to gravity
-        self.g = ACC_GRAVITY
+        self.g = cfg.ENV.ACC_GRAVITY
 
         # set gains
         self.set_gains()
@@ -22,17 +30,18 @@ class Quadrotor:
         self.set_init_state()
 
         # set commanded accelerations
-        self.ax = AX
-        self.ay = AY
-        self.az = AZ
+        self.ax = cfg.ACC_COMMAND.AX
+        self.ay = cfg.ACC_COMMAND.AY
+        self.az = cfg.ACC_COMMAND.AZ
 
         # compute commanded attitude using commanded accelerations
-        self.phi_c = atan(self.ay * cos(self.theta)/(self.g - self.az + 1e-16))     # <- check for az sign
-        self.theta_c = atan(self.ax / (self.az - self.g + 1e-16))                  # <- check for az sign
+        self.phi_c = atan(self.ay * cos(self.theta) / (self.g - self.az + EPSILON))   # <- check for az sign
+        self.theta_c = atan(self.ax / (self.az - self.g + EPSILON))                   # <- check for az sign
         self.psi_c = 0
 
         # compute required force
-        self.F = (self.g - self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
+        self.F = (self.g - self.az) \
+                 * (self.INERTIA.m / (EPSILON + cos(self.phi)*cos(self.theta)))
 
         # compute required torque
         self.tau_phi = self.GAINS.KP_phi*self.norm_ang(self.phi_c - self.phi) + self.GAINS.KD_phi*(0-self.p)
@@ -48,12 +57,12 @@ class Quadrotor:
 
     def compute_force_and_torque(self):
         # compute commanded attitude using commanded accelerations
-        self.phi_c = atan(self.ay * cos(self.theta)/(self.g - self.az + 1e-16))     # <- check for az sign
-        self.theta_c = atan(self.ax / (self.az - self.g + 1e-16))                  # <- check for az sign
+        self.phi_c = atan(self.ay * cos(self.theta)/(self.g - self.az + EPSILON))     # <- check for az sign
+        self.theta_c = atan(self.ax / (self.az - self.g + EPSILON))                  # <- check for az sign
         self.psi_c = 0
 
         # compute required force
-        self.F = (self.g - self.az) * (self.INERTIA.m / (1e-16 + cos(self.phi)*cos(self.theta)))
+        self.F = (self.g - self.az) * (self.INERTIA.m / (EPSILON + cos(self.phi)*cos(self.theta)))
         
 
         # compute required torque
@@ -66,67 +75,84 @@ class Quadrotor:
         """Set inertia params - mass and moments of inertia Ixx, Iyy and Izz (diagonal elements of inertia tensor) - for drone. 
         """
         InertiaParams = namedtuple('InertiaParams', 'm Ixx Iyy Izz')
-        self.INERTIA = InertiaParams(MASS, I_XX, I_YY, I_ZZ)
+        self.INERTIA = InertiaParams(
+            cfg.INERTIA.MASS,
+            cfg.INERTIA.I_XX,
+            cfg.INERTIA.I_YY,
+            cfg.INERTIA.I_ZZ
+        )
 
 
     def set_gains(self):
         """set proportional and derivative gains for euler angles roll(φ), pitch(θ), yaw(ψ) and altitude
         """
         Gains = namedtuple('Gains', 'KP_phi KD_phi KP_theta KD_theta KP_psi KD_psi KP_z KD_z')
-        self.GAINS = Gains(K_P_PHI, K_D_PHI, K_P_THETA, K_D_THETA, K_P_PSI, K_D_PSI, K_P_Z, K_D_Z)
+        self.GAINS = Gains(
+            cfg.GAINS.K_P_PHI,
+            cfg.GAINS.K_D_PHI,
+            cfg.GAINS.K_P_THETA,
+            cfg.GAINS.K_D_THETA,
+            cfg.GAINS.K_P_PSI,
+            cfg.GAINS.K_D_PSI,
+            cfg.GAINS.K_P_Z,
+            cfg.GAINS.K_D_Z,
+        )
 
 
     def set_init_state(self):
         print('\n\n INITIALIZING QUADROTOR STATES')
         print('------------------------------\n')
-        self.pN = PN
-        self.pE = PE
-        self.pH = PH
-        self.U = U
-        self.V = V
-        self.W = W
-        self.phi = PHI
-        self.theta = THETA
-        self.psi = PSI
-        self.p = P
-        self.q = Q
-        self.r = R
+        self.pN = cfg.INIT_STATE.PN
+        self.pE = cfg.INIT_STATE.PE
+        self.pH = cfg.INIT_STATE.PH
+        self.U = cfg.INIT_STATE.U
+        self.V = cfg.INIT_STATE.V
+        self.W = cfg.INIT_STATE.W
+        self.phi = cfg.INIT_STATE.PHI
+        self.theta = cfg.INIT_STATE.THETA
+        self.psi = cfg.INIT_STATE.PSI
+        self.p = cfg.INIT_STATE.P
+        self.q = cfg.INIT_STATE.Q
+        self.r = cfg.INIT_STATE.R
 
-        self.state = np.array([self.pN,
-                               self.pE,
-                               self.pH,
-                               self.U,
-                               self.V,
-                               self.W,
-                               self.phi,
-                               self.theta,
-                               self.psi,
-                               self.p,
-                               self.q,
-                               self.r])
+        self.state = np.array([
+            self.pN,
+            self.pE,
+            self.pH,
+            self.U,
+            self.V,
+            self.W,
+            self.phi,
+            self.theta,
+            self.psi,
+            self.p,
+            self.q,
+            self.r,
+        ])
 
 
     def print_states(self):
         """helper function to print states"""
-        print(f'pos=({self.pN:.2f}, ' + 
-              f'{self.pE:.2f}, ' + 
-              f'{self.pH:.2f})  vel=(' +
-              f'{self.U:.2f}, ' +
-              f'{self.V:.2f}, ' +
-              f'{self.W:.2f})  att=(' +
-              f'{self.phi:.2f}, ' +
-              f'{self.theta:.2f}, ' +
-              f'{self.psi:.2f})  att_rate=(' +
-              f'{self.p:.2f}, ' +
-              f'{self.q:.2f}, ' +
-              f'{self.r:.2f})  FaT=(' +
-              f'{self.F:.2f}, ' +
-              f'{self.tau_phi:.2f}, ' +
-              f'{self.tau_theta:.2f}, ' + 
-              f'{self.tau_psi:.2f})'
-            )    
+        print(
+            f'pos=({self.pN:.2f}, '
+            + f'{self.pE:.2f}, ' 
+            + f'{self.pH:.2f})  vel=('
+            + f'{self.U:.2f}, '
+            + f'{self.V:.2f}, '
+            + f'{self.W:.2f})  att=('
+            + f'{self.phi:.2f}, '
+            + f'{self.theta:.2f}, '
+            + f'{self.psi:.2f})  att_rate=('
+            + f'{self.p:.2f}, '
+            + f'{self.q:.2f}, '
+            + f'{self.r:.2f})  FaT=('
+            + f'{self.F:.2f}, '
+            + f'{self.tau_phi:.2f}, '
+            + f'{self.tau_theta:.2f}, '
+            + f'{self.tau_psi:.2f})'
+        )    
 
-    def step(self, delta_t=DELTA_T, integrator=EULER):
+    def step(self, delta_t=cfg.TIME.DELTA_T, integrator=cfg.INTEGRATOR.EULER):
         state = self.get_state()
 
         updated_state = self.update_state(state, delta_t, integrator)
@@ -136,28 +162,30 @@ class Quadrotor:
 
 
     def get_state(self):
-        self.state = np.array([self.pN,
-                               self.pE,
-                               self.pH,
-                               self.U,
-                               self.V,
-                               self.W,
-                               self.phi,
-                               self.theta,
-                               self.psi,
-                               self.p,
-                               self.q,
-                               self.r])
+        self.state = np.array([
+            self.pN,
+            self.pE,
+            self.pH,
+            self.U,
+            self.V,
+            self.W,
+            self.phi,
+            self.theta,
+            self.psi,
+            self.p,
+            self.q,
+            self.r,
+        ])
 
         return self.state
 
 
-    def update_state(self, state, delta_t, integrator=EULER):
+    def update_state(self, state, delta_t, integrator=cfg.INTEGRATOR.EULER):
         self.compute_force_and_torque()
 
-        if integrator==EULER:
+        if integrator == cfg.INTEGRATOR.EULER:
             self.state = self.euler_update_state(state, delta_t)
-        elif integrator==RK45:
+        elif integrator == cfg.INTEGRATOR.RK45:
             self.state = self.rk45_update_state(state, delta_t)
 
         self.pN = self.state[0]
@@ -177,7 +205,7 @@ class Quadrotor:
 
 
     def euler_update_state(self, state, delta_t):
-        num_inner_loop = NUM_INNER_LOOP
+        num_inner_loop = cfg.SIM.NUM_INNER_LOOP
         inner_loop_step = delta_t / num_inner_loop
 
         for i in range(num_inner_loop):
@@ -191,7 +219,7 @@ class Quadrotor:
 
 
     def rk45_update_state(self, state, delta_t):
-        num_inner_loop = NUM_INNER_LOOP
+        num_inner_loop = cfg.SIM.NUM_INNER_LOOP
         inner_loop_step = delta_t / num_inner_loop
 
         for i in range(num_inner_loop):
@@ -224,14 +252,18 @@ class Quadrotor:
         # pN_dot, pE_dot, pH_dot
         # -----------------------
         # construct rotation matrix transforming body frame (A) to local NED (N)
-        self.A_R_N = np.array([[cos(theta)*cos(psi), sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi), cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi)],
-                               [cos(theta)*sin(psi), sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi), cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi)],
-                               [-sin(theta),         sin(phi)*cos(theta),                            cos(phi)*cos(theta)]])
+        self.A_R_N = np.array([
+            [cos(theta)*cos(psi), sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi), cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi)],
+            [cos(theta)*sin(psi), sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi), cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi)],
+            [-sin(theta),         sin(phi)*cos(theta),                            cos(phi)*cos(theta)]
+        ])
         
         # transform and compute velocities of inertial frame quantities pN, pE and h
-        vel_NEU = self.A_R_N @ np.array([[u],
-                                         [v],
-                                         [w]])
+        vel_NEU = self.A_R_N @ np.array([
+            [u],
+            [v],
+            [w],
+        ])
 
         state_dot[:3] = vel_NEU.flatten()
 
@@ -253,28 +285,36 @@ class Quadrotor:
         # phi_dot, theta_dot, psi_dot
         # ---------------------------
         # compute the transform matrix
-        transform_mat = np.array([[1, sin(phi)*tan(theta), cos(phi)*tan(theta)],
-                                  [0, cos(phi),            -sin(phi)],
-                                  [0, sin(phi)/(cos(theta)+1e-16), cos(phi)/(cos(theta)+1e-16)]])
+        transform_mat = np.array([
+            [1, sin(phi)*tan(theta),           cos(phi)*tan(theta)],
+            [0, cos(phi),                      -sin(phi)],
+            [0, sin(phi)/(cos(theta)+EPSILON), cos(phi)/(cos(theta)+EPSILON)]
+        ])
 
         # compute attitude rate dynamics
-        attitude_dot = transform_mat @ np.array([[p],
-                                                 [q],
-                                                 [r]])
+        attitude_dot = transform_mat @ np.array([
+            [p],
+            [q],
+            [r],
+        ])
 
         state_dot[6:9] = attitude_dot.flatten()
 
         # p_dot, q_dot, r_dot
         # -------------------
         # compute coriolis term
-        coriolis = np.array([[((self.INERTIA.Iyy - self.INERTIA.Izz)/self.INERTIA.Ixx)*q*r],
-                             [((self.INERTIA.Izz - self.INERTIA.Ixx)/self.INERTIA.Iyy)*p*r],
-                             [((self.INERTIA.Ixx - self.INERTIA.Iyy)/self.INERTIA.Izz)*p*q]])
+        coriolis = np.array([
+            [((self.INERTIA.Iyy - self.INERTIA.Izz)/self.INERTIA.Ixx)*q*r],
+            [((self.INERTIA.Izz - self.INERTIA.Ixx)/self.INERTIA.Iyy)*p*r],
+            [((self.INERTIA.Ixx - self.INERTIA.Iyy)/self.INERTIA.Izz)*p*q],
+        ])
 
         # compute F/m analog in Euler equations - τ/I
-        angular_accel = np.array([[(1/self.INERTIA.Ixx)*self.tau_phi],
-                                  [(1/self.INERTIA.Iyy)*self.tau_theta],
-                                  [(1/self.INERTIA.Izz)*self.tau_psi]])
+        angular_accel = np.array([
+            [(1/self.INERTIA.Ixx)*self.tau_phi],
+            [(1/self.INERTIA.Iyy)*self.tau_theta],
+            [(1/self.INERTIA.Izz)*self.tau_psi],
+        ])
 
         # compute angular velocity rate dynamics
         ang_vel_dot = coriolis + angular_accel
@@ -284,15 +324,32 @@ class Quadrotor:
         return state_dot
 
         
-    def simulate(self, delta_t=DELTA_T, final_time=30, integrator=EULER):
-        time = np.array([i for i in np.arange(0,final_time,DELTA_T)])
+    def simulate(
+        self,
+        delta_t=cfg.TIME.DELTA_T,
+        final_time=30,
+        integrator=cfg.INTEGRATOR.EULER,
+    ):
+        time = np.array([i for i in np.arange(0,final_time,delta_t)])
 
         states = np.expand_dims(self.get_state(),0)
         forces = np.array([[self.F, self.tau_phi, self.tau_theta, self.tau_psi]])
         for i in time:
             state = self.step(delta_t, integrator)
-            states = np.concatenate((states, np.expand_dims(state,0)), axis=0)
-            forces = np.concatenate((forces,np.array([[self.F, self.tau_phi, self.tau_theta, self.tau_psi]])),axis=0)
+            states = np.concatenate(
+                (
+                    states, 
+                    np.expand_dims(state, 0)
+                ),
+                axis=0
+            )
+            forces = np.concatenate(
+                (
+                    forces, 
+                    np.array([[self.F, self.tau_phi, self.tau_theta, self.tau_psi]])
+                ),
+                axis=0
+            )
 
         return time, states, forces
 
@@ -362,10 +419,10 @@ def set_wrench_plot_titles(axs):
 
 def main():
     quadrotor = Quadrotor()
-    t, quad_states, forces = quadrotor.simulate(delta_t=DELTA_T, final_time=FINAL_TIME, integrator=EULER)
+    t, quad_states, forces = quadrotor.simulate(delta_t=cfg.TIME.DELTA_T, final_time=cfg.TIME.FINAL_TIME, integrator=cfg.INTEGRATOR.EULER)
 
     quadrotor.set_init_state()
-    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=DELTA_T, final_time=FINAL_TIME, integrator=RK45)
+    t2, quad_states2, forces2 = quadrotor.simulate(delta_t=cfg.TIME.DELTA_T, final_time=cfg.TIME.FINAL_TIME, integrator=cfg.INTEGRATOR.RK45)
     # quadrotor.set_init_state()
     # t3, quad_states3, forces3 = quadrotor.simulate(delta_t=DELTA_T*4, final_time=FINAL_TIME, integrator=EULER)
 
